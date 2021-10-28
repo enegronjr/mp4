@@ -134,12 +134,35 @@ void *find_worst(int new_bytes)
 	return worst;
 }
 
-void coalesce()
+void coalesce(mem_chunk_t* p)
 {
 	mem_chunk_t * start = Rover;
-	unsigned long curr_addr, next_addr;
-
-	// loop through entire list
+	unsigned long rover_addr, p_addr;
+    p_addr = (unsigned long) p;
+	
+    // empty list
+    if(Rover->next == Rover)
+    {
+        Rover->next = p;
+        p->next = Rover;
+    }
+    else
+    {
+        // loop through entire list
+        while(Rover->next != start)
+        {
+            rover_addr = (unsigned long) Rover;
+            // if p belongs after Rover and either before Rover->next or if Rover->next is beginning
+            if(p_addr > rover_addr && 
+            (rover_addr > (unsigned long) Rover->next || p_addr < (unsigned long) Rover->next))
+            {
+                p->next = Rover->next->next;
+                Rover->next = p;
+            }
+        }
+    }
+    
+    unsigned long curr_addr, next_addr;
 	while(Rover->next != start)
 	{
 		curr_addr = (unsigned long) Rover;
@@ -173,10 +196,18 @@ void Mem_free(void *return_ptr)
     // assume p points to the start of the block to return to the free list
     // assert(p->size_units > 1);   // verify that the size field is valid
     // assert(p->next == NULL);    // this is not required but would be a good idea
-    
+    mem_chunk_t *p = return_ptr;
+    p->size_units = sizeof(*return_ptr);
 
-    // obviously the next line is WRONG!!!!  You must fix it.
-    free(return_ptr);
+    if(!Coalescing)
+    {
+        p->next = Rover->next;
+        Rover->next = p;
+    }
+    else
+    {
+        coalesce(p);
+    }
 }
 
 /* returns a pointer to space for an object of size nbytes, or NULL if the
