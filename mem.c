@@ -173,6 +173,7 @@ void Mem_free(void *return_ptr)
     // assume p points to the start of the block to return to the free list
     // assert(p->size_units > 1);   // verify that the size field is valid
     // assert(p->next == NULL);    // this is not required but would be a good idea
+    
 
     // obviously the next line is WRONG!!!!  You must fix it.
     free(return_ptr);
@@ -197,7 +198,27 @@ void *Mem_alloc(const int nbytes)
     // assert((nunits-1)*sizeof(mem_chunk_t) >= nbytes);
     // assert((nunits-1)*sizeof(mem_chunk_t) < nbytes + sizeof(mem_chunk_t));
 
-    // Insert your code here to find memory block
+    // find free block based on search policy
+    mem_chunk_t *p = NULL;
+    switch (SearchPolicy)
+    {
+        case FIRST_FIT:
+            p = find_first(new_bytes);
+            break;
+        case BEST_FIT:
+            p = find_best(new_bytes);
+            break;
+        case WORST_FIT:
+            p = find_worst(new_bytes);
+            break;
+    }
+
+    if(p == NULL)
+    {
+        p = morecore(new_bytes);
+    }
+
+    mem_chunk_t *q = p + 1;
 
     // here are possible post-conditions, depending on your design. 
     // Include these tests before returning from this function.
@@ -218,10 +239,8 @@ void *Mem_alloc(const int nbytes)
     // assert((p->size_units-1)*sizeof(mem_chunk_t) < nbytes + sizeof(mem_chunk_t));
     // assert(p->next == NULL);  // saftey first!
     // return q;
-
-
-    // obviously the next line is WRONG!!!!  You must fix it.
-    return malloc(nbytes);
+    
+    return q;
 }
 
 /* prints stats about the current free list

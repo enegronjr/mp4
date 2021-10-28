@@ -12,10 +12,10 @@
 #define FALSE 0
 
 // must be FIRST_FIT or BEST_FIT
-int SearchPolicy;
+extern int SearchPolicy;
 
 // TRUE if memory returned to free list is coalesced 
-int Coalescing;
+extern int Coalescing;
 
 /* deallocates the space pointed to by return_ptr; it does nothing if
  * return_ptr is NULL.  
