@@ -161,7 +161,7 @@ void coalesce(mem_chunk_t* p)
             }
         }
     }
-    
+
     unsigned long curr_addr, next_addr;
 	while(Rover->next != start)
 	{
@@ -285,14 +285,18 @@ void *Mem_alloc(const int nbytes)
  */
 void Mem_stats(void)
 {
-    printf("delete me and implement mem stats\n");
-    // One of the stats you must collect is the total number
-    // of pages that have been requested using sbrk.
-    // Say, you call this NumPages.  You also must count M,
-    // the total number of bytes found in the free list 
-    // (including all bytes used for headers).  If it is the case
-    // that M == NumPages * PAGESiZE then print
-    printf("all memory is in the heap -- no leaks are possible\n");
+    mem_chunk_t *start = Rover;
+    Rover = Rover->next;
+    int M = 0;
+    while(Rover != start)
+    {
+        printf("p=%p, size=%d (units) , end=%p, next=%p\n",
+         Rover, Rover->size_units, Rover + Rover->size_units, Rover->next);
+        M += sizeof(mem_chunk_t) * (Rover->size_units + 1);
+        Rover = Rover->next;
+    }
+    if(M == NumPages * PAGESIZE)
+        printf("all memory is in the heap -- no leaks are possible\n");
 }
 
 /* print table of memory in free list 
